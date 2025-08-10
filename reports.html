@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Management - Reports</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>EcoFleet</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="vehicles.html">Vehicles</a></li>
+                <li><a href="maintenance.html">Maintenance</a></li>
+                <li class="active"><a href="reports.html">Reports</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <section class="report-section">
+            <h2>Vehicle Usage Report</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehicle ID</th>
+                        <th>Driver</th>
+                        <th>Distance (km)</th>
+                        <th>Trips</th>
+                        <th>Avg. Speed (km/h)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>V001</td>
+                        <td>John Doe</td>
+                        <td>450</td>
+                        <td>8</td>
+                        <td>60</td>
+                    </tr>
+                    <tr>
+                        <td>V002</td>
+                        <td>Jane Smith</td>
+                        <td>390</td>
+                        <td>6</td>
+                        <td>58</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="report-section">
+            <h2>Fuel Consumption Report</h2>
+            <canvas id="fuelChart" height="100"></canvas>
+        </section>
+
+        <section class="report-section">
+            <h2>Maintenance Cost Analysis</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehicle ID</th>
+                        <th>Total Maintenance Cost</th>
+                        <th>Last Service Date</th>
+                        <th>Next Service Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>V001</td>
+                        <td>₹12,500</td>
+                        <td>2025-07-15</td>
+                        <td>2025-10-15</td>
+                    </tr>
+                    <tr>
+                        <td>V002</td>
+                        <td>₹8,900</td>
+                        <td>2025-06-25</td>
+                        <td>2025-09-25</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('fuelChart').getContext('2d');
+        const fuelChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['V001', 'V002', 'V003', 'V004'],
+                datasets: [{
+                    label: 'Fuel Consumption (Liters)',
+                    data: [320, 280, 400, 350],
+                    backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#FF5722']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

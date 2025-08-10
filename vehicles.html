@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Management - Vehicles</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>EcoFleet</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li class="active"><a href="vehicles.html">Vehicles</a></li>
+                <li><a href="maintenance.html">Maintenance</a></li>
+                <li><a href="reports.html">Reports</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <h1>Vehicles</h1>
+            <button class="btn-primary" onclick="showAddVehicleForm()">+ Add Vehicle</button>
+        </header>
+
+        <!-- Vehicle List Table -->
+        <section class="card">
+            <h2>Vehicle List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Vehicle Name</th>
+                        <th>Type</th>
+                        <th>Registration</th>
+                        <th>Status</th>
+                        <th>Last Service</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="vehicleTableBody">
+                    <tr>
+                        <td>1</td>
+                        <td>Tata Ace</td>
+                        <td>Truck</td>
+                        <td>AP03 AB 1234</td>
+                        <td><span class="status-active">Active</span></td>
+                        <td>2025-07-18</td>
+                        <td>
+                            <button class="btn-edit" onclick="editVehicle(1)">Edit</button>
+                            <button class="btn-delete" onclick="deleteVehicle(1)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Vehicle Status Chart -->
+        <section class="card">
+            <h2>Vehicle Status Overview</h2>
+            <canvas id="vehicleStatusChart"></canvas>
+        </section>
+    </main>
+
+    <!-- Add/Edit Vehicle Modal -->
+    <div class="modal" id="vehicleModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeVehicleForm()">&times;</span>
+            <h2 id="modalTitle">Add Vehicle</h2>
+            <form id="vehicleForm">
+                <label>Vehicle Name</label>
+                <input type="text" id="vehicleName" required>
+
+                <label>Type</label>
+                <input type="text" id="vehicleType" required>
+
+                <label>Registration</label>
+                <input type="text" id="vehicleReg" required>
+
+                <label>Status</label>
+                <select id="vehicleStatus">
+                    <option value="Active">Active</option>
+                    <option value="In Maintenance">In Maintenance</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+
+                <label>Last Service Date</label>
+                <input type="date" id="lastService" required>
+
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="vehicles.js"></script>
+</body>
+</html>
