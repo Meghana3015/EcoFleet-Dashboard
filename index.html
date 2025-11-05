@@ -1,101 +1,311 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoFleet Dashboard</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/dashboard.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>EcoFleet</h2>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoFleet EV Dashboard</title>
+    <link rel="stylesheet" href="/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <header class="header">
+        <div class="header-content">
+          <div class="logo">
+            <!-- <svg width="32" height="32" viewBox="0 0 32 32" fill="none"> -->
+              <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 8v8l5 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h1>EcoFleet</h1>
+          </div>
+          <div class="header-actions">
+            <div class="nav-buttons">
+              <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+              <button class="nav-btn" data-view="alerts">Fleet Alerts</button>
+              <button class="nav-btn" data-view="settings">Settings</button>
+            </div>
+            <button class="icon-btn" id="notificationBtn">
+              <span class="notification-badge" id="notificationBadge">3</span>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M15 6.66667C15 5.34058 14.4732 4.06881 13.5355 3.13113C12.5979 2.19345 11.3261 1.66667 10 1.66667C8.67392 1.66667 7.40215 2.19345 6.46447 3.13113C5.52678 4.06881 5 5.34058 5 6.66667C5 12.5 2.5 14.1667 2.5 14.1667H17.5C17.5 14.1667 15 12.5 15 6.66667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M11.4417 17.5C11.2952 17.7526 11.0849 17.9622 10.8319 18.1079C10.5789 18.2537 10.292 18.3304 10 18.3304C9.70802 18.3304 9.42112 18.2537 9.16813 18.1079C8.91514 17.9622 8.70484 17.7526 8.55833 17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="btn-primary" id="exportBtn">Export Report</button>
+          </div>
         </div>
-        <nav>
-            <ul>
-                <li class="active"><a href="index.html">Dashboard</a></li>
-                <li><a href="vehicles.html">Vehicles</a></li>
-                <li><a href="maintenance.html">Maintenance</a></li>
-                <li><a href="reports.html">Reports</a></li>
-            </ul>
-        </nav>
-    </aside>
+      </header>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        
-        <!-- Top Navigation -->
-        <header class="topbar">
-            <h1>Fleet Overview</h1>
-            <div class="user-actions">
-                <button>Notifications</button>
-                <button>Profile</button>
-            </div>
-        </header>
+      <div class="notifications-panel" id="notificationsPanel">
+        <h3>Notifications</h3>
+        <div class="notification-item warning">
+          <div class="notification-icon">⚠️</div>
+          <div class="notification-content">
+            <strong>Low Battery Alert</strong>
+            <p>EV004 (BMW i4) - Battery at 15%</p>
+            <span class="notification-time">5 minutes ago</span>
+          </div>
+        </div>
+        <div class="notification-item info">
+          <div class="notification-icon">🔌</div>
+          <div class="notification-content">
+            <strong>Charging Complete</strong>
+            <p>EV001 (Tesla Model 3) - Ready for use</p>
+            <span class="notification-time">2 hours ago</span>
+          </div>
+        </div>
+        <div class="notification-item alert">
+          <div class="notification-icon">🔧</div>
+          <div class="notification-content">
+            <strong>Maintenance Due</strong>
+            <p>EV006 (Ford Mustang Mach-E) - Schedule service</p>
+            <span class="notification-time">1 day ago</span>
+          </div>
+        </div>
+      </div>
 
-        <!-- Stats Cards -->
-        <section class="stats-cards">
-            <div class="card">
-                <h3>Total Vehicles</h3>
-                <p id="totalVehicles">0</p>
+      <main class="main-content">
+        <div id="dashboardView" class="view-section active">
+        <section class="kpi-section">
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
-            <div class="card">
-                <h3>In Maintenance</h3>
-                <p id="inMaintenance">0</p>
+            <div class="kpi-content">
+              <p class="kpi-label">Average Range</p>
+              <h2 class="kpi-value" id="avgRange">0 km</h2>
+              <span class="kpi-change positive">+8.2% from last month</span>
             </div>
-            <div class="card">
-                <h3>Active Vehicles</h3>
-                <p id="activeVehicles">0</p>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="7" width="20" height="14" rx="2" stroke="white" stroke-width="2"/>
+                <path d="M22 13h2v-2h-2" stroke="white" stroke-width="2"/>
+                <path d="M6 11h4v6H6z" fill="white"/>
+              </svg>
             </div>
-            <div class="card">
-                <h3>Upcoming Services</h3>
-                <p id="upcomingServices">0</p>
+            <div class="kpi-content">
+              <p class="kpi-label">Avg. Charging Cost</p>
+              <h2 class="kpi-value" id="avgCost">₹0</h2>
+              <span class="kpi-change positive">-12.5% from last month</span>
             </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke="white" stroke-width="2"/>
+                <path d="M12 12l-7-4m7 4l7-4m-7 4v8" stroke="white" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Energy Efficiency</p>
+              <h2 class="kpi-value" id="avgEfficiency">0 km/kWh</h2>
+              <span class="kpi-change positive">+5.1% from last month</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M3 3v18h18" stroke="white" stroke-width="2"/>
+                <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Total CO₂ Saved</p>
+              <h2 class="kpi-value" id="totalCo2">0 kg</h2>
+              <span class="kpi-change positive">+18.3% from last month</span>
+            </div>
+          </div>
         </section>
 
-        <!-- Charts & Tables -->
-        <section class="dashboard-widgets">
-            <!-- Vehicle Status Chart -->
-            <div class="widget">
-                <h3>Vehicle Status</h3>
-                <canvas id="vehicleStatusChart"></canvas>
-            </div>
+        <section class="charts-section">
+          <div class="chart-card">
+            <h3>Charging Sessions & Energy Consumption</h3>
+            <canvas id="chargingChart"></canvas>
+          </div>
 
-            <!-- Upcoming Maintenance Table -->
-            <div class="widget">
-                <h3>Upcoming Maintenance</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Vehicle ID</th>
-                            <th>Model</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="upcomingMaintenanceTable">
-                        <!-- Data will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
+          <div class="chart-card">
+            <h3>Battery Health Trend</h3>
+            <canvas id="batteryHealthChart"></canvas>
+          </div>
         </section>
 
-        <!-- Maintenance Cost Chart -->
-        <section class="dashboard-widgets full-width">
-            <div class="widget">
-                <h3>Maintenance Costs (Last 6 Months)</h3>
-                <canvas id="maintenanceCostChart"></canvas>
-            </div>
+        <section class="charts-section">
+          <div class="chart-card">
+            <h3>Fleet Efficiency Comparison</h3>
+            <canvas id="efficiencyChart"></canvas>
+          </div>
+
+          <div class="chart-card">
+            <h3>Monthly CO₂ Savings</h3>
+            <canvas id="co2Chart"></canvas>
+          </div>
         </section>
 
+        <section class="fleet-section">
+          <h2>Fleet Overview</h2>
+          <div class="fleet-grid" id="fleetGrid"></div>
+        </section>
+
+        <section class="leaderboard-section">
+          <h2>Carbon Offset Leaderboard</h2>
+          <div class="leaderboard" id="leaderboard"></div>
+        </section>
+        </div>
+
+        <div id="alertsView" class="view-section">
+          <section class="alerts-header">
+            <h2>Fleet Alerts</h2>
+            <div class="alerts-filters">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="critical">Critical</button>
+              <button class="filter-btn" data-filter="warning">Warning</button>
+              <button class="filter-btn" data-filter="info">Info</button>
+            </div>
+          </section>
+          <div class="alerts-container" id="alertsContainer"></div>
+        </div>
+
+        <div id="settingsView" class="view-section">
+          <section class="settings-container">
+            <h2>Settings</h2>
+
+            <div class="settings-section">
+              <h3>Notification Preferences</h3>
+              <div class="settings-group">
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Low Battery Alert Threshold</label>
+                    <span class="settings-value">20%</span>
+                  </div>
+                  <input type="range" id="batteryThreshold" min="10" max="50" value="20" class="settings-slider">
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Enable Email Notifications</label>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="emailNotifications" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Enable SMS Alerts</label>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="smsAlerts" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Alert Frequency</label>
+                  </div>
+                  <select id="alertFrequency" class="settings-select">
+                    <option value="immediate">Immediate</option>
+                    <option value="hourly">Hourly Digest</option>
+                    <option value="daily">Daily Digest</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Fleet Management</h3>
+              <div class="settings-group">
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Enable Battery Health Monitoring</label>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="batteryMonitoring" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Maintenance Reminder Days</label>
+                  </div>
+                  <input type="number" id="maintenanceReminder" min="1" max="90" value="30" class="settings-input">
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Target CO₂ Reduction (%)</label>
+                  </div>
+                  <input type="number" id="co2Target" min="0" max="100" value="15" class="settings-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Display Preferences</h3>
+              <div class="settings-group">
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Distance Unit</label>
+                  </div>
+                  <select id="distanceUnit" class="settings-select">
+                    <option value="km">Kilometers (km)</option>
+                    <option value="miles">Miles</option>
+                  </select>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Energy Unit</label>
+                  </div>
+                  <select id="energyUnit" class="settings-select">
+                    <option value="kwh">Kilowatt Hours (kWh)</option>
+                    <option value="mj">Megajoules (MJ)</option>
+                  </select>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Default Chart Period</label>
+                  </div>
+                  <select id="chartPeriod" class="settings-select">
+                    <option value="week">Last 7 days</option>
+                    <option value="month">Last 30 days</option>
+                    <option value="quarter">Last 90 days</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Account</h3>
+              <div class="settings-group">
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Organization</label>
+                  </div>
+                  <input type="text" id="organization" value="VRC Pvt. Ltd." class="settings-input" readonly>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-label">
+                    <label>Administrator</label>
+                  </div>
+                  <input type="text" id="administrator" value="fleet.admin@vrc.com" class="settings-input" readonly>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button class="btn-primary" id="saveSettings">Save Settings</button>
+              <button class="btn-secondary" id="resetSettings">Reset to Defaults</button>
+            </div>
+          </section>
+        </div>
+      </main>
     </div>
 
-    <!-- Scripts -->
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/charts.js"></script>
-</body>
+    <script type="module" src="/dashboard.js"></script>
+  </body>
 </html>
