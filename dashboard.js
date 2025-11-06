@@ -10,6 +10,9 @@ async function loadData() {
   }
 }
 
+let mapInstance = null;
+let vehicleMarkers = {};
+
 function initializeDashboard() {
   updateKPIs();
   renderCharts();
@@ -19,6 +22,7 @@ function initializeDashboard() {
   setupInteractions();
   setupNavigation();
   loadSettings();
+  setTimeout(initializeMap, 100);
 }
 
 function updateKPIs() {
@@ -505,20 +509,7 @@ function getTimeString(timestamp) {
   return date.toLocaleDateString();
 }
 
-// function resolveAlert(alertId) {
-//   const alert = dashboardData.alerts.find(a => a.id === alertId);
-//   if (alert) {
-//     alert.resolved = true;
-//     renderAlerts();
-//     updateAlertBadge();
-//   }
-// }
 
-// function dismissAlert(alertId) {
-//   dashboardData.alerts = dashboardData.alerts.filter(a => a.id !== alertId);
-//   renderAlerts();
-//   updateAlertBadge();
-// }
 
 function resolveAlert(alertId) {
   const alert = dashboardData.alerts.find(a => a.id === alertId);
@@ -625,6 +616,223 @@ function exportReport() {
   a.download = `ecofleet-report-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function getVehicleAlerts(vehicleId) {
+  return dashboardData.alerts.filter(a => a.vehicleId === vehicleId && !a.resolved);
+}
+
+function getAlertSeverity(vehicleId) {
+  const alerts = getVehicleAlerts(vehicleId);
+  if (alerts.some(a => a.severity === 'critical')) return 'critical';
+  if (alerts.some(a => a.severity === 'warning')) return 'warning';
+  if (alerts.length > 0) return 'info';
+  return 'ok';
+}
+
+function createMarkerIcon(severity, status) {
+  const colors = {
+    critical: '#ef4444',
+    warning: '#f59e0b',
+    info: '#3b82f6',
+    ok: '#10b981'
+  };
+
+  const color = colors[severity] || colors.ok;
+
+  return L.divIcon({
+    html: `
+      <div style="
+        background: ${color};
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        font-size: 16px;
+      ">
+        ${severity === 'critical' ? '⚠️' : severity === 'warning' ? '⚡' : status === 'charging' ? '🔌' : '🚗'}
+      </div>
+    `,
+    iconSize: [32, 32],
+    className: 'vehicle-marker'
+  });
+}
+
+function initializeMap() {
+  const container = document.getElementById('mapContainer');
+  if (!container) return;
+
+  mapInstance = L.map('mapContainer').setView([40.7505, -73.9972], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(mapInstance);
+
+  renderMapMarkers();
+  renderVehicleList();
+  setupMapControls();
+
+  setTimeout(() => {
+    mapInstance.invalidateSize();
+  }, 300);
+}
+
+function renderMapMarkers() {
+  Object.values(vehicleMarkers).forEach(marker => {
+    if (mapInstance && marker._map) {
+      mapInstance.removeLayer(marker);
+    }
+  });
+  vehicleMarkers = {};
+
+  dashboardData.fleet.forEach(vehicle => {
+    const alerts = getVehicleAlerts(vehicle.id);
+    const severity = getAlertSeverity(vehicle.id);
+
+    const marker = L.marker(
+      [vehicle.location.lat, vehicle.location.lng],
+      { icon: createMarkerIcon(severity, vehicle.status) }
+    );
+
+    const alertsHtml = alerts.length > 0
+      ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(51, 65, 85, 0.5);">
+           <h4 style="margin: 0 0 6px 0; font-size: 12px; font-weight: 600; color: #1f2937;">Alerts</h4>
+           ${alerts.map(a => `
+             <div style="font-size: 11px; padding: 4px 6px; background: rgba(239, 68, 68, 0.1); border-left: 2px solid #ef4444; margin: 4px 0; color: #7f1d1d;">
+               ${a.title}
+             </div>
+           `).join('')}
+         </div>`
+      : '';
+
+    const popupContent = `
+      <div class="marker-popup-content">
+        <h4>${vehicle.make} ${vehicle.model}</h4>
+        <p><strong>${vehicle.id}</strong></p>
+        <p>Driver: ${vehicle.driver}</p>
+        <p>Battery: ${vehicle.batteryLevel}% | Range: ${vehicle.range}km</p>
+        <p>Status: <strong>${vehicle.status.toUpperCase()}</strong></p>
+        ${alertsHtml}
+      </div>
+    `;
+
+    marker.bindPopup(popupContent, { maxWidth: 250 });
+
+    marker.on('click', () => {
+      highlightVehicleInList(vehicle.id);
+    });
+
+    marker.addTo(mapInstance);
+    vehicleMarkers[vehicle.id] = marker;
+  });
+}
+
+function renderVehicleList() {
+  const vehicleList = document.getElementById('vehicleList');
+  vehicleList.innerHTML = dashboardData.fleet.map(vehicle => {
+    const alerts = getVehicleAlerts(vehicle.id);
+    const severity = getAlertSeverity(vehicle.id);
+
+    return `
+      <div class="vehicle-list-item" data-vehicle-id="${vehicle.id}" onclick="focusVehicle('${vehicle.id}')">
+        <h4>${vehicle.make} ${vehicle.model}</h4>
+        <p>${vehicle.id}</p>
+        <p>Driver: ${vehicle.driver}</p>
+        <p>Battery: ${vehicle.batteryLevel}% | Range: ${vehicle.range}km</p>
+        ${alerts.length > 0 ? `
+          <div class="vehicle-status-indicator ${severity}">
+            ${severity === 'critical' ? '⚠️' : severity === 'warning' ? '⚡' : 'ℹ️'}
+            ${alerts.length} alert${alerts.length > 1 ? 's' : ''}
+          </div>
+        ` : `
+          <div class="vehicle-status-indicator ok">
+            ✓ No alerts
+          </div>
+        `}
+      </div>
+    `;
+  }).join('');
+}
+
+function focusVehicle(vehicleId) {
+  const vehicle = dashboardData.fleet.find(v => v.id === vehicleId);
+  if (vehicle && vehicleMarkers[vehicleId] && mapInstance) {
+    highlightVehicleInList(vehicleId);
+    mapInstance.setView([vehicle.location.lat, vehicle.location.lng], 15);
+    vehicleMarkers[vehicleId].openPopup();
+  }
+}
+
+function highlightVehicleInList(vehicleId) {
+  document.querySelectorAll('.vehicle-list-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  document.querySelector(`[data-vehicle-id="${vehicleId}"]`)?.classList.add('active');
+}
+
+function setupMapControls() {
+  const centerBtn = document.getElementById('centerMapBtn');
+  const filterBtn = document.getElementById('filterMapBtn');
+
+  if (centerBtn) {
+    centerBtn.addEventListener('click', () => {
+      const bounds = L.latLngBounds(
+        dashboardData.fleet.map(v => [v.location.lat, v.location.lng])
+      );
+      mapInstance.fitBounds(bounds, { padding: [50, 50] });
+    });
+  }
+
+  if (filterBtn) {
+    filterBtn.addEventListener('click', () => {
+      const alertOnly = filterBtn.dataset.filterMode === 'alerts';
+      filterBtn.dataset.filterMode = alertOnly ? 'all' : 'alerts';
+      filterBtn.style.opacity = alertOnly ? '1' : '0.6';
+
+      if (!alertOnly) {
+        Object.keys(vehicleMarkers).forEach(vehicleId => {
+          const vehicle = dashboardData.fleet.find(v => v.id === vehicleId);
+          const alerts = getVehicleAlerts(vehicleId);
+          const severity = getAlertSeverity(vehicleId);
+
+          const marker = vehicleMarkers[vehicleId];
+          marker.setIcon(createMarkerIcon(severity, vehicle.status));
+          marker.setOpacity(1);
+        });
+      } else {
+        Object.keys(vehicleMarkers).forEach(vehicleId => {
+          const alerts = getVehicleAlerts(vehicleId);
+          const marker = vehicleMarkers[vehicleId];
+
+          if (alerts.length === 0) {
+            marker.setOpacity(0.3);
+          } else {
+            marker.setOpacity(1);
+          }
+        });
+      }
+    });
+
+// function resolveAlert(alertId) {
+//   const alert = dashboardData.alerts.find(a => a.id === alertId);
+//   if (alert) {
+//     alert.resolved = true;
+//     renderAlerts();
+//     updateAlertBadge();
+//   }
+// }
+
+// function dismissAlert(alertId) {
+//   dashboardData.alerts = dashboardData.alerts.filter(a => a.id !== alertId);
+//   renderAlerts();
+//   updateAlertBadge();
+// }
+  }
 }
 
 loadData();
